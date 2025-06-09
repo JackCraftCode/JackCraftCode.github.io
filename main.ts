@@ -1,8 +1,6 @@
-import { serve } from "https://deno.land/std@0.204.0/http/server.ts";
-
 const indexHtml = await Deno.readTextFile("./index.html");
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (url.pathname === "/projects") {
     const api = "https://api.github.com/users/JackCraftCode/repos";
