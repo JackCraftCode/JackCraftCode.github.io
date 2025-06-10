@@ -1,2 +1,6 @@
-.idea/deno.xml
+/shelf/
+/workspace.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
 /.idea
