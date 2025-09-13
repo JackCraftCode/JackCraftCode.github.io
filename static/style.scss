@@ -1,0 +1,95 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	background: url("images/Golden-Music-Symbols.jpg") no-repeat center fixed;
+    background-size: cover;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+}
+
+nav {
+	background-color: #1f1f1f;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+    background-color: black;
+}
+
+.logo {
+	color: white;
+	text-decoration: none;
+	font-size: 1.25rem;
+	font-weight: bold;
+}
+
+.hamburger {
+	font-size: 1.5rem;
+	color: white;
+	background: none;
+	border: none;
+	cursor: pointer;
+	display: none;
+}
+
+.menu {
+	list-style: none;
+	display: flex;
+	gap: 2rem;
+	align-items: center;
+}
+
+.nav-item > a {
+	color: white;
+	text-decoration: none;
+	padding: 0.5rem 0;
+	display: inline-block;
+	transition: color 0.3s;
+}
+
+.nav-item > a:hover {
+	color: #00bfff;
+}
+
+.has-dropdown {
+	position: relative;
+}
+
+.dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background-color: #2b2b2b;
+	list-style: none;
+	display: none;
+	flex-direction: column;
+	min-width: 180px;
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+	border-radius: 6px;
+	overflow: hidden;
+	z-index: 1000;
+}
+
+.sub-item a {
+	display: block;
+	color: white;
+	padding: 0.75rem 1rem;
+	text-decoration: none;
+	transition: background-color 0.3s;
+}
+
+.sub-item a:hover {
+	background-color: #3a3a3a;
+}
+
+.has-dropdown:hover .dropdown {
+	display: flex;
+}

@@ -1,5 +1,5 @@
-import {DOMParser} from "jsr:@b-fuze/deno-dom";
 import readFile = Deno.readFile;
+const read = (p: string) => Deno.readTextFile(new URL(p, import.meta.url));
 
 const status_NOT_FOUND = 404;
 const status_OK = 200;
@@ -8,6 +8,7 @@ const appTitle = "Jackson McAfee's Portfolio";
 function MIMEtype(filename: string) {
 	const MIME_TYPES = {
 		'css': 'text/css',
+		'scss': 'text/css',
 		'gif': 'image/gif',
 		'htm': 'text/html',
 		'html': 'text/html',
@@ -31,19 +32,15 @@ function MIMEtype(filename: string) {
 	return MIME_TYPES[extension as keyof typeof MIME_TYPES] || "application/octet-stream";
 }
 
-function template_header(title: string) {
-	const fullTitle = appTitle + ": " + title;
+function template_notFound() {
+	const fullTitle = appTitle + ": Page Not Found";
 
 	return '<!DOCTYPE html>' +
 		'<html lang="en">' +
 		'    <head>' +
 		'        <title>${fullTitle}</title>' +
-		'        <link rel="stylesheet" href="style.css">' +
-		'    </head>'
-}
-
-function template_notFound() {
-	return template_header("Page not found") +
+		'        <link rel="stylesheet" href="style.scss">' +
+		'    </head>' +
 		'    <body id="body">' +
 		'        <h1>Page not found</h1>' +
 		'        <p>Sorry, the requested page was not found.</p>' +
@@ -51,45 +48,37 @@ function template_notFound() {
 		'</html>'
 }
 
-async function addScriptAndStyle(path: string) {
-	const html = await Deno.readTextFile(path);
-	const doc = new DOMParser().parseFromString(html, "text/html");
-	const head = doc.querySelector("head");
-	if (head) {
-		const scriptTag = doc.createElement("script");
-		scriptTag.setAttribute("src", "client.ts");
-		const inlineScript = doc.createElement("script");
-		inlineScript.textContent =
-			"\n        window.addEventListener(\"DOMContentLoaded\", () => {" +
-			"\n            insertCommonElement();\n        });\n    ";
-		head.append("    ", scriptTag, "\n    ", inlineScript, "\n");
-	}
-	return doc.documentElement.innerHTML;
-}
-
-async function fileData(path: string) {
-	let contents, status, contentType;
+async function render(path: string) {
+	let content, status, contentType;
 	if (path.lastIndexOf('.') === -1) path += ".html";
 	const type = MIMEtype(path);
 
 	try {
-		if (type === "text/html") contents = await addScriptAndStyle("./static" + path);
-		else contents = await readFile("./static" + path);
+		if (type === "text/html") {
+			const [layout, navbar, page] = await Promise.all([
+				read("./static/layout.html"),
+				read("./static/partials/navbar.html"),
+				read(`./static/pages/${path}`),
+			]);
+			content = layout
+				.replace("<!-- NAVBAR -->", navbar)
+				.replace("<!-- PAGE -->", page);
+		} else content = await readFile("./static" + path);
 		status = status_OK;
 		contentType = type;
 	} catch (_e) {
-		contents = template_notFound();
+		content = template_notFound();
 		status = status_NOT_FOUND;
 		contentType = "text/html";
 	}
 
-	return {contents, status, contentType};
+	return {contents: content, status, contentType};
 }
 
 const server = Deno.serve(async (req) => {
 	let path = new URL(req.url).pathname;
-	if (path === "/") path = "/index.html";
-	let r = await fileData(path);
+	if (path === "/") path = "/home.html";
+	let r = await render(path);
 
 	console.log(`${r.status} ${req.method} ${r.contentType} ${path}`);
 
