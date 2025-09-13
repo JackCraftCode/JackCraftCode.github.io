@@ -75,6 +75,21 @@ async function render(path: string) {
 	return {contents: content, status, contentType};
 }
 
+function cacheHeaders(path: string, contentType: string): Record<string, string> {
+	// Long cache for static assets (images, fonts)
+	const long = "public, max-age=31536000, immutable";
+	const short = "public, max-age=3600";
+
+	const isImage = /^image\//.test(contentType) || /\.(avif|webp|png|jpe?g|gif|svg|ico)$/i.test(path);
+	const isStaticCode = /^(text\/css|text\/javascript|application\/javascript)$/.test(contentType) ||
+		/\.(css|js)$/i.test(path);
+
+	return {
+		"content-type": contentType,
+		"cache-control": isImage ? long : (isStaticCode ? short : "public, max-age=300"),
+	};
+}
+
 const server = Deno.serve(async (req) => {
 	let path = new URL(req.url).pathname;
 	if (path === "/") path = "/home.html";
@@ -82,10 +97,9 @@ const server = Deno.serve(async (req) => {
 
 	console.log(`${r.status} ${req.method} ${r.contentType} ${path}`);
 
+	const headers = cacheHeaders(path, r.contentType);
 	return new Response(r.contents, {
-		status: r.status, headers: {
-			"content-type": r.contentType,
-		}
+		status: r.status, headers
 	});
 });
 
