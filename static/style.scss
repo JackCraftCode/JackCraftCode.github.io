@@ -6,10 +6,12 @@ body {
 }
 
 /* ===== Base reset for the nav ===== */
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 header {
-  position: sticky;       /* stay visible while scrolling */
+  position: sticky;
   top: 0;
   z-index: 1000;
 }
@@ -53,7 +55,7 @@ header nav {
   padding: 14px 10px;
   color: var(--nav-fg);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
   background: transparent;
   border: 0;
@@ -68,18 +70,11 @@ header nav {
   text-decoration: underline;
 }
 
-/* Optional caret for the Projects toggle on desktop */
-.has-children > .submenu-toggle::after {
-  //content: "▾";
-  margin-left: 0.35rem;
-  font-size: 0.85em;
-}
-
 /* ===== Dropdown (submenu) ===== */
 .submenu {
   /* positioned relative to the parent <li> thanks to position:relative above */
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100%);
   left: 0;                 /* align left edge under the parent; change to 50%/translateX(-50%) to center if preferred */
   min-width: 220px;
   list-style: none;
