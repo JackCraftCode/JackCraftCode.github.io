@@ -1,117 +1,202 @@
 body {
 	background: url("images/Golden-Music-Symbols.jpg") no-repeat center fixed;
-    background-size: cover;
+	background-size: cover;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: white;
+	color: white;
+	margin-top: 0;
 }
 
-/* ===== Base reset for the nav ===== */
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+:root {
+	--bg: #0b0f14;
+	--panel: #121821;
+	--muted: #8aa1b2;
+	--accent: #79c0ff;
+	--border: #1b2430;
+	--code: #0d1117;
 }
 
 header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+	position: sticky;
+	top: 0;
+	z-index: 1000;
+	padding: 10px 16px;
+	display: flex;
+	gap: 12px;
+	align-items: center
 }
 
 header nav {
-  /* center the whole bar at the top, full width */
-  width: 100%;
-  display: flex;
-  justify-content: center;   /* center the menu horizontally */
-  align-items: center;
-  /* semi-transparent background + subtle glass feel */
-  --nav-bg: rgba(15, 15, 20, 0.55);
-  --nav-fg: #ffffff;
-  --nav-border: rgba(255, 255, 255, 0.12);
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	--nav-bg: rgba(15, 15, 20, 0.55);
+	--nav-fg: #ffffff;
+	--nav-border: rgba(255, 255, 255, 0.12);
 
-  background: var(--nav-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--nav-border);
+	background: var(--nav-bg);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 }
 
-/* ===== Top-level menu ===== */
 .menu {
-  list-style: none;
-  margin: 0;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  /* equal spacing between items */
-  gap: clamp(1rem, 2.5vw, 2.5rem);
+	list-style: none;
+	margin: 0;
+	padding: 0 24px;
+	display: flex;
+	align-items: center;
+	gap: clamp(1rem, 2.5vw, 2.5rem);
 }
 
 .menu > li {
-  position: relative; /* anchor for the dropdown (submenu) */
+	position: relative;
 }
 
-/* Links and the Projects button should look the same on desktop */
 .menu > li > a,
 .menu > li > .submenu-toggle {
-  display: block;
-  padding: 14px 10px;
-  color: var(--nav-fg);
-  text-decoration: none;
-  font-weight: 400;
-  line-height: 1;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
+	display: block;
+	padding: 14px 10px;
+	color: var(--nav-fg);
+	text-decoration: none;
+	font-weight: 400;
+	line-height: 1;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
 }
 
 .menu > li > a:hover,
 .menu > li > .submenu-toggle:hover,
 .menu > li > a:focus-visible,
 .menu > li > .submenu-toggle:focus-visible {
-  outline: none;
-  text-decoration: underline;
+	outline: none;
+	text-decoration: underline;
 }
 
-/* ===== Dropdown (submenu) ===== */
 .submenu {
-  /* positioned relative to the parent <li> thanks to position:relative above */
-  position: absolute;
-  top: calc(100%);
-  left: 0;                 /* align left edge under the parent; change to 50%/translateX(-50%) to center if preferred */
-  min-width: 220px;
-  list-style: none;
-  margin: 0;
-  padding: 8px 0;
+	position: absolute;
+	top: calc(100%);
+	left: 0;
+	min-width: 220px;
+	list-style: none;
+	margin: 0;
+	padding: 8px 0;
 
-  background: var(--nav-bg);                 /* same style as top bar */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--nav-border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+	background: var(--nav-bg);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	border: 1px solid var(--nav-border);
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 
-  display: none; /* hidden by default for desktop hover UX */
+	display: none;
 }
 
 .submenu li a {
-  display: block;
-  padding: 10px 16px;
-  color: var(--nav-fg);
-  text-decoration: none;
-  white-space: nowrap;
+	display: block;
+	padding: 10px 16px;
+	color: var(--nav-fg);
+	text-decoration: none;
+	white-space: nowrap;
 }
 
 .submenu li a:hover,
 .submenu li a:focus-visible {
-  background: rgba(255,255,255,0.06);
+	background: rgba(255, 255, 255, 0.06);
 }
 
-/* Keep UA [hidden] behavior, but allow hover to override it for desktop */
-.submenu[hidden] { display: none; }
+.submenu[hidden] {
+	display: none;
+}
 
-/* Show dropdown on hover/focus of the parent item (desktop behavior) */
 .has-children:hover > .submenu,
 .has-children:focus-within > .submenu {
-  display: block !important; /* override [hidden] UA rule */
+	display: block !important;
 }
 
-/* Hide the hamburger on desktop explicitly (already hidden in HTML, but just in case) */
-.hamburger { display: none !important; }
+.hamburger {
+	display: none !important;
+}
+
+.container {
+	display: grid;
+	grid-template-columns: 320px 1fr;
+	height: calc(100vh - 56px);
+}
+
+aside {
+	border-right: 1px solid var(--border);
+	background: var(--panel);
+	overflow: auto
+}
+
+#fileList {
+	list-style: none;
+	margin: 0;
+	padding: 8px
+}
+
+#fileList li {
+	border: 1px solid transparent;
+	border-radius: 12px;
+	padding: 8px 10px;
+	margin: 2px 0;
+	cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+	align-items: center
+}
+
+#fileList li:hover {
+	background: #0f1520;
+	border-color: var(--border)
+}
+
+#fileList li.active {
+	background: #121826;
+	border-color: #2b3a4a
+}
+
+#codeWrap {
+	padding: 0 24px 80px 24px;
+	overflow: auto;
+	position: relative;
+	background: var(--code)
+}
+
+pre {
+	margin: 16px 0;
+	border: 1px solid var(--border);
+	overflow: auto
+}
+
+.fileTitle {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: #0d1117;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	border-bottom: 1px solid var(--border);
+	padding: 10px 16px
+}
+
+.empty {
+	color: var(--muted);
+	padding: 24px
+}
+
+@media (max-width: 900px) {
+	.container {
+		grid-template-columns: 1fr
+	}
+
+	aside {
+		display: none
+	}
+}

@@ -10,4 +10,9 @@ Make sure you have Deno installed, then run:
 deno run --allow-read --allow-net main.ts
 ```
 
-The root page serves `index.html`. Visiting `/projects` fetches the public repositories from GitHub.
+Deno serves `layout.html` with the more specific page content injected.
+Visiting `/projects` fetches the public repositories from GitHub.
+
+### Additional Notes
+
+I know...I know...my code needs more comments

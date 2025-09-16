@@ -4,6 +4,14 @@ const read = (p: string) => Deno.readTextFile(new URL(p, import.meta.url));
 const status_NOT_FOUND = 404;
 const status_OK = 200;
 const appTitle = "Jackson McAfee's Portfolio";
+const owner = "JackCraftCode";
+const branch = "main";
+
+const textExts = new Set([
+	"ts","tsx","js","jsx","md","html","css","scss","sass",
+	"less","svg","py","java","cs","cpp","cc","cxx","c",
+	"hs","h","hpp","hh","sql","makefile","cmake","csv"
+]);
 
 function MIMEtype(filename: string) {
 	const MIME_TYPES = {
@@ -48,6 +56,25 @@ function template_notFound() {
 		'</html>'
 }
 
+async function injectCommonElms(layout: string, pagePath: string) {
+	let partial, injectIndex;
+	let content = layout.replace(
+		"<!-- INJECT::page -->",
+		await read(`./static/pages/${pagePath}`)
+	);
+
+	while (content.includes("INJECT::")) {
+		injectIndex = content.indexOf("INJECT::") + 8;
+
+		partial = content.substring(injectIndex, content.indexOf(" -->", injectIndex));
+		content = content.replace(
+			`<!-- INJECT::${partial} -->`,
+			await read(`./static/partials/${partial}.html`)
+		);
+	}
+	return content;
+}
+
 async function render(path: string) {
 	let content, status, contentType;
 	if (path.lastIndexOf('.') === -1) path += ".html";
@@ -55,14 +82,8 @@ async function render(path: string) {
 
 	try {
 		if (type === "text/html") {
-			const [layout, navbar, page] = await Promise.all([
-				read("./static/layout.html"),
-				read("./static/partials/navbar.html"),
-				read(`./static/pages/${path}`),
-			]);
-			content = layout
-				.replace("<!-- NAVBAR -->", navbar)
-				.replace("<!-- PAGE -->", page);
+			const layout = await read('./static/layout.html');
+			content = await injectCommonElms(layout, path);
 		} else content = await readFile("./static" + path);
 		status = status_OK;
 		contentType = type;
@@ -90,14 +111,76 @@ function cacheHeaders(path: string, contentType: string): Record<string, string>
 	};
 }
 
+function isTextualPath(p: string) {
+	const lower = p.toLowerCase();
+	if (lower.endsWith(".min.js") || lower.endsWith(".min.css")) return true;
+	const fname = lower.split("/").pop()!;
+	if (fname === "makefile") return true;
+	const ext = lower.includes(".") ? lower.split(".").pop()! : "";
+	return textExts.has(ext);
+}
+
+async function ghFetch(url: string, init: RequestInit = {}) {
+	const headers = new Headers(init.headers);
+	headers.set("Accept", "application/vnd.github+json");
+	return fetch(url, {...init, headers});
+}
+
+type CacheEntry<T> = {etag?: string; value: T; timestamp: number};
+const cache = new Map<string, CacheEntry<any>>();
+
+async function getTree(repo: string) {
+	const key = `tree:${owner}/${repo}@${branch}`;
+	const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+	const existing = cache.get(key);
+	const headers: HeadersInit = {};
+	if (existing?.etag) headers["If-None-Match"] = existing.etag;
+	const res = await ghFetch(url, {headers});
+	if (res.status === 304 && existing) return existing.value;
+	if (!res.ok) throw new Response(`GitHub tree error ${res.status}`, {status: res.status});
+	const etag = res.headers.get("etag") ?? undefined;
+	const data = await res.json(); // includes tree: TreeItem[]
+	cache.set(key, {etag, value: data, timestamp: Date.now()});
+	return data;
+}
+
+async function getRawFileContent(repo: string, path: string): Promise<string> {
+	const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+	const res = await fetch(url);
+	if (!res.ok) throw new Response(`Raw fetch failed ${res.status}`, {status: res.status});
+	const text = await res.text();
+	if (text.length > 500_000) throw new Response("File too large to display (limit 500KB).", {status: 413});
+	return text;
+}
+
 const server = Deno.serve(async (req) => {
-	let path = new URL(req.url).pathname;
-	if (path === "/") path = "/home.html";
-	let r = await render(path);
+	const {pathname, searchParams} = new URL(req.url);
+	let urlPath = pathname;
+	if (urlPath === "/") urlPath = "/home.html";
 
-	console.log(`${r.status} ${req.method} ${r.contentType} ${path}`);
+	if (urlPath === "/api/tree") {
+		const repo = searchParams.get("repo");
+		const data = await getTree(repo);
+		const blobs = (data.tree as TreeItem[])
+			.filter((t) => t.type === "blob")
+			.filter((t) => isTextualPath(t.path))
+			.map((t) => ({path: t.path, size: t.size ?? null}));
+		return new Response(JSON.stringify({files: blobs}));
+	}
 
-	const headers = cacheHeaders(path, r.contentType);
+	if (urlPath === "/api/file") {
+		const path = searchParams.get("path");
+		const repo = searchParams.get("repo");
+		const content = await getRawFileContent(repo, path);
+		const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+		return new Response(JSON.stringify({path, content, rawUrl}));
+	}
+
+	let r = await render(urlPath);
+
+	console.log(`${r.status} ${req.method} ${r.contentType} ${urlPath}`);
+
+	const headers = cacheHeaders(urlPath, r.contentType);
 	return new Response(r.contents, {
 		status: r.status, headers
 	});
