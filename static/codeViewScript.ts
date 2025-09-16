@@ -42,14 +42,13 @@ function renderList() {
 async function openFile(path){
 	active = path;
 	for (const li of list.children) li.classList.toggle("active", li.dataset.path === path);
-	// currentPath.textContent = path;
 	codeWrap.innerHTML = "<div class='empty'>Loading…</div>";
 	const res = await fetch(`/api/file?repo=${repo}&path=${encodeURIComponent(path)}`);
 	if (!res.ok) {
 		codeWrap.innerHTML = "<div class='empty'>Failed to load file.</div>";
 		return;
 	}
-	const { content, rawUrl } = await res.json();
+	const {content} = await res.json();
 	const pre = document.createElement("pre");
 	const code = document.createElement("code");
 	code.className = "language-" + (extToLang(path) || "");
@@ -57,7 +56,6 @@ async function openFile(path){
 	pre.appendChild(code);
 	codeWrap.innerHTML = "";
 	codeWrap.appendChild(pre);
-	hljs.highlightElement(code);
 	location.hash = encodeURIComponent(path);
 }
 

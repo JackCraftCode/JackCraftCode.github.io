@@ -172,8 +172,7 @@ const server = Deno.serve(async (req) => {
 		const path = searchParams.get("path");
 		const repo = searchParams.get("repo");
 		const content = await getRawFileContent(repo, path);
-		const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
-		return new Response(JSON.stringify({path, content, rawUrl}));
+		return new Response(JSON.stringify({content}));
 	}
 
 	let r = await render(urlPath);
